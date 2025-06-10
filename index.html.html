@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telegram WebApp</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+</head>
+<body class="bg-white text-black">
+  <header class="w-full flex justify-around items-center py-4 border-b">
+    <div class="flex items-center space-x-2">
+      <i data-feather="home"></i>
+      <span class="text-lg">Главная</span>
+    </div>
+    <div class="flex items-center space-x-2">
+      <i data-feather="help-circle"></i>
+      <span class="text-lg">Помощь</span>
+    </div>
+  </header>
+
+  <main class="flex flex-col items-center justify-center min-h-screen space-y-6 pt-10">
+    <button id="viewRequestsBtn" class="bg-black text-white px-6 py-2 rounded w-11/12 max-w-sm">Все запросы</button>
+
+    <button id="securePaymentBtn" class="bg-white border border-black text-black px-6 py-2 rounded w-11/12 max-w-sm flex items-center justify-center space-x-2">
+      <i data-feather="shield"></i>
+      <span>Безопасная оплата</span>
+    </button>
+
+    <div class="flex flex-row space-x-4">
+      <button id="sendBtn" class="bg-black text-white px-6 py-2 rounded">Отправить</button>
+      <button id="deliverBtn" class="border border-black text-black px-6 py-2 rounded">Доставить</button>
+    </div>
+
+    <form id="form" class="hidden flex flex-col space-y-4 w-full px-4 max-w-md">
+      <div id="fromGroup">
+        <input type="text" id="fromInput" placeholder="Откуда?" class="border p-2 rounded w-full" required>
+      </div>
+      <div id="toGroup">
+        <input type="text" id="toInput" placeholder="Куда?" class="border p-2 rounded w-full" required>
+      </div>
+      <div id="contentGroup">
+        <input type="text" id="contentInput" placeholder="Описание, Дата, Вознагрождение" class="border p-2 rounded w-full" required>
+      </div>
+      <div id="nicknameGroup">
+        <input type="text" id="nicknameInput" placeholder="Telegram - @....." class="border p-2 rounded w-full text-blue-600" required>
+      </div>
+      <button id="publishBtn" class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed" disabled>Опубликовать</button>
+    </form>
+    <div id="successMessage" class="hidden text-black flex items-center space-x-2">
+      <i data-feather="check-circle" class="text-green-600"></i>
+      <span class="text-black">Успешно опубликовано</span>
+    </div>
+  </main>
+
+  <div id="requestOverlay" class="fixed inset-0 bg-white text-black hidden z-50 overflow-y-auto flex flex-col items-center p-6">
+    <button id="closeOverlay" class="mb-4 bg-black text-white px-4 py-2 rounded">Закрыть</button>
+    <div id="requestList" class="space-y-6 w-full max-w-md"></div>
+  </div>
+
+  <div id="secureModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg w-11/12 max-w-md text-center space-y-4">
+      <p class="text-lg">Для безопасной оплаты свяжитесь с администратором</p>
+      <div class="flex justify-center space-x-4">
+        <a href="https://t.me/Seend1drop" target="_blank" class="flex items-center justify-center bg-white text-black px-4 py-2 border border-black rounded space-x-2">
+          <i data-feather="send"></i>
+          <span>@Seend1drop</span>
+        </a>
+        <button id="closeSecureModal" class="bg-gray-200 text-black px-4 py-2 rounded">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    feather.replace();
+
+    const sendBtn = document.getElementById('sendBtn');
+    const deliverBtn = document.getElementById('deliverBtn');
+    const form = document.getElementById('form');
+    const fromGroup = document.getElementById('fromGroup');
+    const toGroup = document.getElementById('toGroup');
+    const contentGroup = document.getElementById('contentGroup');
+    const nicknameGroup = document.getElementById('nicknameGroup');
+    const publishBtn = document.getElementById('publishBtn');
+    const successMessage = document.getElementById('successMessage');
+
+    const securePaymentBtn = document.getElementById('securePaymentBtn');
+    const secureModal = document.getElementById('secureModal');
+    const closeSecureModal = document.getElementById('closeSecureModal');
+
+    const viewRequestsBtn = document.getElementById('viewRequestsBtn');
+    const requestOverlay = document.getElementById('requestOverlay');
+    const closeOverlay = document.getElementById('closeOverlay');
+    const requestList = document.getElementById('requestList');
+
+    const saveRequests = (requests) => {
+      localStorage.setItem('requests', JSON.stringify(requests));
+    };
+
+    const loadRequests = () => {
+      return JSON.parse(localStorage.getItem('requests') || '[]');
+    };
+
+    const renderRequests = () => {
+      requestList.innerHTML = '';
+      const requests = loadRequests();
+      requests.forEach((requestData) => {
+        const item = document.createElement('div');
+        item.className = 'border border-black rounded p-4';
+        item.innerHTML = `
+          <p><strong>Откуда:</strong> ${requestData.from}</p>
+          <p><strong>Куда:</strong> ${requestData.to}</p>
+          ${requestData.content ? `<p><strong>Содержание:</strong> ${requestData.content}</p>` : ''}
+          ${requestData.nickname ? `<p><strong>Ник:</strong> ${requestData.nickname}</p>` : ''}
+          <p class="text-sm text-gray-600">${requestData.timestamp}</p>
+        `;
+        requestList.prepend(item);
+      });
+    };
+
+    sendBtn.addEventListener('click', () => {
+      form.classList.remove('hidden');
+      contentGroup.classList.remove('hidden');
+      nicknameGroup.classList.remove('hidden');
+      publishBtn.textContent = 'Опубликовать';
+      successMessage.classList.add('hidden');
+    });
+
+    deliverBtn.addEventListener('click', () => {
+      form.classList.remove('hidden');
+      contentGroup.classList.add('hidden');
+      nicknameGroup.classList.add('hidden');
+      publishBtn.textContent = 'Искать';
+      successMessage.classList.add('hidden');
+    });
+
+    form.addEventListener('input', () => {
+      const from = document.getElementById('fromInput').value.trim();
+      const to = document.getElementById('toInput').value.trim();
+      const content = contentGroup.classList.contains('hidden') ? 'ok' : document.getElementById('contentInput').value.trim();
+      const nickname = nicknameGroup.classList.contains('hidden') ? 'ok' : document.getElementById('nicknameInput').value.trim();
+
+      if (from && to && content && nickname) {
+        publishBtn.disabled = false;
+        publishBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        publishBtn.classList.add('bg-black', 'cursor-pointer');
+      } else {
+        publishBtn.disabled = true;
+        publishBtn.classList.remove('bg-black', 'cursor-pointer');
+        publishBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+      }
+    });
+
+    publishBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      const from = document.getElementById('fromInput').value.trim();
+      const to = document.getElementById('toInput').value.trim();
+      const content = contentGroup.classList.contains('hidden') ? '' : document.getElementById('contentInput').value.trim();
+      const nickname = nicknameGroup.classList.contains('hidden') ? '' : document.getElementById('nicknameInput').value.trim();
+
+      if (publishBtn.textContent === 'Опубликовать') {
+        const requestData = {
+          from,
+          to,
+          content,
+          nickname,
+          timestamp: new Date().toLocaleString()
+        };
+
+        const requests = loadRequests();
+        requests.push(requestData);
+        saveRequests(requests);
+
+        renderRequests();
+
+        successMessage.classList.remove('hidden');
+        form.reset();
+        publishBtn.disabled = true;
+        publishBtn.classList.remove('bg-black', 'cursor-pointer');
+        publishBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+      } else {
+        const allRequests = loadRequests();
+        const filtered = allRequests.filter(r => r.from.toLowerCase() === from.toLowerCase() && r.to.toLowerCase() === to.toLowerCase());
+        requestList.innerHTML = '';
+        filtered.forEach((requestData) => {
+          const item = document.createElement('div');
+          item.className = 'border border-black rounded p-4';
+          item.innerHTML = `
+            <p><strong>Откуда:</strong> ${requestData.from}</p>
+            <p><strong>Куда:</strong> ${requestData.to}</p>
+            ${requestData.content ? `<p><strong>Содержание:</strong> ${requestData.content}</p>` : ''}
+            ${requestData.nickname ? `<p><strong>Ник:</strong> ${requestData.nickname}</p>` : ''}
+            <p class="text-sm text-gray-600">${requestData.timestamp}</p>
+          `;
+          requestList.prepend(item);
+        });
+        requestOverlay.classList.remove('hidden');
+      }
+    });
+
+    securePaymentBtn.addEventListener('click', () => {
+      secureModal.classList.remove('hidden');
+    });
+
+    closeSecureModal.addEventListener('click', () => {
+      secureModal.classList.add('hidden');
+    });
+
+    viewRequestsBtn.addEventListener('click', () => {
+      renderRequests();
+      requestOverlay.classList.remove('hidden');
+    });
+
+    closeOverlay.addEventListener('click', () => {
+      requestOverlay.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>
