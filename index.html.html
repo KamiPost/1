@@ -2,219 +2,181 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Telegram WebApp</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+  <style>
+    .btn-animated {
+      background: linear-gradient(135deg, #4f46e5, #3b82f6);
+      color: white;
+      font-weight: 700;
+      padding: 0.75rem 2rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 8px 15px rgba(59, 130, 246, 0.4);
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.3s ease;
+      user-select: none;
+      font-size: 1.125rem;
+      margin: 0.5rem 0;
+      min-width: 120px;
+    }
+
+    .btn-animated:hover {
+      box-shadow: 0 12px 20px rgba(59, 130, 246, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .btn-animated:active {
+      box-shadow: 0 5px 10px rgba(59, 130, 246, 0.5);
+      transform: translateY(1px);
+    }
+
+    .btn-simple {
+      background: white;
+      border: 1.5px solid black;
+      color: black;
+      font-weight: 600;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-simple:hover {
+      background-color: #f0f0f0;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .overlay h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .form-section {
+      background: #2d2d2d;
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-section label {
+      font-size: 1rem;
+      margin-top: 1rem;
+      margin-bottom: 0.4rem;
+      display: block;
+      color: #f3f4f6;
+    }
+
+    .form-section input[type="text"],
+    .form-section input[type="number"] {
+      width: 100%;
+      background: #444;
+      color: white;
+      padding: 0.6rem 1rem;
+      border: 1px solid #666;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+
+    #closeOverlayBtn {
+      align-self: flex-end;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.6rem;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1rem;
+      box-shadow: 0 8px 15px rgba(79, 70, 229, 0.6);
+      transition: background-color 0.3s ease;
+    }
+
+    #closeOverlayBtn:hover {
+      background-color: #4338ca;
+    }
+  </style>
 </head>
 <body class="bg-white text-black">
-  <header class="w-full flex justify-around items-center py-4 border-b">
-    <div class="flex items-center space-x-2">
-      <i data-feather="home"></i>
-      <span class="text-lg">Главная</span>
-    </div>
-    <div class="flex items-center space-x-2">
-      <i data-feather="help-circle"></i>
-      <span class="text-lg">Помощь</span>
-    </div>
-  </header>
 
-  <main class="flex flex-col items-center justify-center min-h-screen space-y-6 pt-10">
-    <button id="viewRequestsBtn" class="bg-black text-white px-6 py-2 rounded w-11/12 max-w-sm">Все запросы</button>
-
-    <button id="securePaymentBtn" class="bg-white border border-black text-black px-6 py-2 rounded w-11/12 max-w-sm flex items-center justify-center space-x-2">
-      <i data-feather="shield"></i>
-      <span>Безопасная оплата</span>
-    </button>
-
-    <div class="flex flex-row space-x-4">
-      <button id="sendBtn" class="bg-black text-white px-6 py-2 rounded">Отправить</button>
-      <button id="deliverBtn" class="border border-black text-black px-6 py-2 rounded">Доставить</button>
-    </div>
-
-    <form id="form" class="hidden flex flex-col space-y-4 w-full px-4 max-w-md">
-      <div id="fromGroup">
-        <input type="text" id="fromInput" placeholder="Откуда?" class="border p-2 rounded w-full" required>
-      </div>
-      <div id="toGroup">
-        <input type="text" id="toInput" placeholder="Куда?" class="border p-2 rounded w-full" required>
-      </div>
-      <div id="contentGroup">
-        <input type="text" id="contentInput" placeholder="Описание, Дата, Вознагрождение" class="border p-2 rounded w-full" required>
-      </div>
-      <div id="nicknameGroup">
-        <input type="text" id="nicknameInput" placeholder="Telegram - @....." class="border p-2 rounded w-full text-blue-600" required>
-      </div>
-      <button id="publishBtn" class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed" disabled>Опубликовать</button>
-    </form>
-    <div id="successMessage" class="hidden text-black flex items-center space-x-2">
-      <i data-feather="check-circle" class="text-green-600"></i>
-      <span class="text-black">Успешно опубликовано</span>
-    </div>
-  </main>
-
-  <div id="requestOverlay" class="fixed inset-0 bg-white text-black hidden z-50 overflow-y-auto flex flex-col items-center p-6">
-    <button id="closeOverlay" class="mb-4 bg-black text-white px-4 py-2 rounded">Закрыть</button>
-    <div id="requestList" class="space-y-6 w-full max-w-md"></div>
+<main class="flex flex-col items-center justify-center min-h-screen space-y-6 pt-6 px-4">
+  <button id="viewRequestsBtn" class="btn-simple w-full max-w-xs">Все запросы</button>
+  <button id="securePaymentBtn" class="btn-simple w-full max-w-xs flex items-center justify-center space-x-2">
+    <i data-feather="shield"></i>
+    <span>Безопасная оплата</span>
+  </button>
+  <div class="flex flex-col w-full max-w-xs space-y-2">
+    <button id="sendBtn" class="btn-animated w-full">Отправить</button>
+    <button id="deliverBtn" class="btn-animated w-full">Доставить</button>
   </div>
+</main>
 
-  <div id="secureModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-lg w-11/12 max-w-md text-center space-y-4">
-      <p class="text-lg">Для безопасной оплаты свяжитесь с администратором</p>
-      <div class="flex justify-center space-x-4">
-        <a href="https://t.me/Seend1drop" target="_blank" class="flex items-center justify-center bg-white text-black px-4 py-2 border border-black rounded space-x-2">
-          <i data-feather="send"></i>
-          <span>@Seend1drop</span>
-        </a>
-        <button id="closeSecureModal" class="bg-gray-200 text-black px-4 py-2 rounded">Закрыть</button>
-      </div>
-    </div>
+<div id="sendOverlay" class="overlay">
+  <button id="closeSendOverlay" class="btn-animated self-end mb-6">Закрыть</button>
+  <h2>Информация о заказе</h2>
+  <div class="form-section">
+    <label for="fromOrder">Откуда?</label>
+    <input type="text" id="fromOrder" placeholder="Введите место отправления" />
+    <label for="toOrder">Куда?</label>
+    <input type="text" id="toOrder" placeholder="Введите место назначения" />
+    <label for="descriptionOrder">Описание</label>
+    <input type="text" id="descriptionOrder" placeholder="Краткое описание" />
+    <label for="weightOrder">Вес посылки</label>
+    <input type="text" id="weightOrder" placeholder="Например: 2 кг" />
+    <label for="dateOrder">Отправить (Дата)</label>
+    <input type="text" id="dateOrder" placeholder="Дата отправки" />
   </div>
+  <h2>Вознагрождение</h2>
+  <div class="form-section">
+    <label for="costOrder">Стоимость</label>
+    <input type="number" id="costOrder" placeholder="Введите сумму" min="0" />
+  </div>
+</div>
 
-  <script>
-    feather.replace();
+<div id="deliverOverlay" class="overlay">
+  <button id="closeDeliverOverlay" class="btn-animated self-end mb-6">Закрыть</button>
+  <h2>Информация о доставке</h2>
+  <div class="form-section">
+    <label for="fromDeliver">Откуда?</label>
+    <input type="text" id="fromDeliver" placeholder="Введите место отправления" />
+    <label for="toDeliver">Куда?</label>
+    <input type="text" id="toDeliver" placeholder="Введите место назначения" />
+  </div>
+</div>
 
-    const sendBtn = document.getElementById('sendBtn');
-    const deliverBtn = document.getElementById('deliverBtn');
-    const form = document.getElementById('form');
-    const fromGroup = document.getElementById('fromGroup');
-    const toGroup = document.getElementById('toGroup');
-    const contentGroup = document.getElementById('contentGroup');
-    const nicknameGroup = document.getElementById('nicknameGroup');
-    const publishBtn = document.getElementById('publishBtn');
-    const successMessage = document.getElementById('successMessage');
+<script>
+  feather.replace();
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    const overlay = document.getElementById('sendOverlay');
+    overlay.style.display = 'flex';
+  });
+  document.getElementById('closeSendOverlay').addEventListener('click', () => {
+    document.getElementById('sendOverlay').style.display = 'none';
+  });
+  document.getElementById('deliverBtn').addEventListener('click', () => {
+    const overlay = document.getElementById('deliverOverlay');
+    overlay.style.display = 'flex';
+  });
+  document.getElementById('closeDeliverOverlay').addEventListener('click', () => {
+    document.getElementById('deliverOverlay').style.display = 'none';
+  });
+</script>
 
-    const securePaymentBtn = document.getElementById('securePaymentBtn');
-    const secureModal = document.getElementById('secureModal');
-    const closeSecureModal = document.getElementById('closeSecureModal');
-
-    const viewRequestsBtn = document.getElementById('viewRequestsBtn');
-    const requestOverlay = document.getElementById('requestOverlay');
-    const closeOverlay = document.getElementById('closeOverlay');
-    const requestList = document.getElementById('requestList');
-
-    const saveRequests = (requests) => {
-      localStorage.setItem('requests', JSON.stringify(requests));
-    };
-
-    const loadRequests = () => {
-      return JSON.parse(localStorage.getItem('requests') || '[]');
-    };
-
-    const renderRequests = () => {
-      requestList.innerHTML = '';
-      const requests = loadRequests();
-      requests.forEach((requestData) => {
-        const item = document.createElement('div');
-        item.className = 'border border-black rounded p-4';
-        item.innerHTML = `
-          <p><strong>Откуда:</strong> ${requestData.from}</p>
-          <p><strong>Куда:</strong> ${requestData.to}</p>
-          ${requestData.content ? `<p><strong>Содержание:</strong> ${requestData.content}</p>` : ''}
-          ${requestData.nickname ? `<p><strong>Ник:</strong> ${requestData.nickname}</p>` : ''}
-          <p class="text-sm text-gray-600">${requestData.timestamp}</p>
-        `;
-        requestList.prepend(item);
-      });
-    };
-
-    sendBtn.addEventListener('click', () => {
-      form.classList.remove('hidden');
-      contentGroup.classList.remove('hidden');
-      nicknameGroup.classList.remove('hidden');
-      publishBtn.textContent = 'Опубликовать';
-      successMessage.classList.add('hidden');
-    });
-
-    deliverBtn.addEventListener('click', () => {
-      form.classList.remove('hidden');
-      contentGroup.classList.add('hidden');
-      nicknameGroup.classList.add('hidden');
-      publishBtn.textContent = 'Искать';
-      successMessage.classList.add('hidden');
-    });
-
-    form.addEventListener('input', () => {
-      const from = document.getElementById('fromInput').value.trim();
-      const to = document.getElementById('toInput').value.trim();
-      const content = contentGroup.classList.contains('hidden') ? 'ok' : document.getElementById('contentInput').value.trim();
-      const nickname = nicknameGroup.classList.contains('hidden') ? 'ok' : document.getElementById('nicknameInput').value.trim();
-
-      if (from && to && content && nickname) {
-        publishBtn.disabled = false;
-        publishBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-        publishBtn.classList.add('bg-black', 'cursor-pointer');
-      } else {
-        publishBtn.disabled = true;
-        publishBtn.classList.remove('bg-black', 'cursor-pointer');
-        publishBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-      }
-    });
-
-    publishBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-
-      const from = document.getElementById('fromInput').value.trim();
-      const to = document.getElementById('toInput').value.trim();
-      const content = contentGroup.classList.contains('hidden') ? '' : document.getElementById('contentInput').value.trim();
-      const nickname = nicknameGroup.classList.contains('hidden') ? '' : document.getElementById('nicknameInput').value.trim();
-
-      if (publishBtn.textContent === 'Опубликовать') {
-        const requestData = {
-          from,
-          to,
-          content,
-          nickname,
-          timestamp: new Date().toLocaleString()
-        };
-
-        const requests = loadRequests();
-        requests.push(requestData);
-        saveRequests(requests);
-
-        renderRequests();
-
-        successMessage.classList.remove('hidden');
-        form.reset();
-        publishBtn.disabled = true;
-        publishBtn.classList.remove('bg-black', 'cursor-pointer');
-        publishBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-      } else {
-        const allRequests = loadRequests();
-        const filtered = allRequests.filter(r => r.from.toLowerCase() === from.toLowerCase() && r.to.toLowerCase() === to.toLowerCase());
-        requestList.innerHTML = '';
-        filtered.forEach((requestData) => {
-          const item = document.createElement('div');
-          item.className = 'border border-black rounded p-4';
-          item.innerHTML = `
-            <p><strong>Откуда:</strong> ${requestData.from}</p>
-            <p><strong>Куда:</strong> ${requestData.to}</p>
-            ${requestData.content ? `<p><strong>Содержание:</strong> ${requestData.content}</p>` : ''}
-            ${requestData.nickname ? `<p><strong>Ник:</strong> ${requestData.nickname}</p>` : ''}
-            <p class="text-sm text-gray-600">${requestData.timestamp}</p>
-          `;
-          requestList.prepend(item);
-        });
-        requestOverlay.classList.remove('hidden');
-      }
-    });
-
-    securePaymentBtn.addEventListener('click', () => {
-      secureModal.classList.remove('hidden');
-    });
-
-    closeSecureModal.addEventListener('click', () => {
-      secureModal.classList.add('hidden');
-    });
-
-    viewRequestsBtn.addEventListener('click', () => {
-      renderRequests();
-      requestOverlay.classList.remove('hidden');
-    });
-
-    closeOverlay.addEventListener('click', () => {
-      requestOverlay.classList.add('hidden');
-    });
-  </script>
 </body>
 </html>
